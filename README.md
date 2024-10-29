@@ -1,6 +1,6 @@
 You need a special dll to run mop_2.
 
-### What I used to compile the app ###
+### What I used to build the app ###
 - IDE: Code::Blocks 20.03
 - OS: Windows 10 22H2 x64
 - Library: wxWidgets-3.2.6
