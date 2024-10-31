@@ -16,7 +16,6 @@ bool PreferenceManager::SaveToFile()
     file << prefs.autoVer << '\n';
     file << prefs.lateVer << '\n';
     file << prefs.pfm << '\n';
-    file << '"' << prefs.path << '"' << '\n';
 
     file.close();
     return true;
@@ -33,15 +32,7 @@ bool PreferenceManager::LoadFromFile()
     file >> prefs.autoVer;
     file >> prefs.lateVer;
     file >> prefs.pfm;
-    file >> prefs.path;
-    if(prefs.path.front() == '"' && prefs.path.back() != '"') {
-        std::string s = "";
-        while(s.back() != '"' && file >> s) {
-            prefs.path += ' ' + s;
-        }
-    }
     std::replace(prefs.pfm.begin(), prefs.pfm.end(), '_', ' ');
-    while(prefs.path.find('"') != std::string::npos) prefs.path.erase(prefs.path.find('"'), 1);
 
     file.close();
     return true;

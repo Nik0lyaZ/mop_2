@@ -14,22 +14,20 @@
 #endif // __WIN32__
 
 #ifdef __WIN32__
-#define PATH_SLASH '\\'
+#define DIR PATH + "\\" + DIRNAME
+#define SAVE DIR + "\\" + SAVENAME
 #else
-#define PATH_SLASH '/'
+#define DIR PATH + "/" + DIRNAME
+#define SAVE DIR + "/" + SAVENAME
 #endif // __WIN32__
-
-#define DIR PATH + PATH_SLASH + DIRNAME
-#define SAVE DIR + PATH_SLASH + SAVENAME
 
 struct Preferences
 {
     std::string ver;
+    std::string pfm;
     int obj = 16384;
     bool autoVer = false,
     lateVer = false;
-    std::string pfm;
-    std::string path = "";
 };
 
 class PreferenceManager
@@ -63,15 +61,6 @@ class PreferenceManager
         // Platform
         wxString GetPfm() {return prefs.pfm;}
         void SetPfm(wxString value) {prefs.pfm = value;}
-
-        // Path to libraries
-        wxString GetPath() {
-            if(!prefs.path.size()) return "";
-            if(prefs.path.front() == '/' || prefs.path.front() == '\\')
-                return prefs.path;
-            return prefs.path + PATH_SLASH;
-        }
-        void SetPath(wxString value) {prefs.path = value;}
 };
 
 #endif // PREFERENCEMANAGER_H
