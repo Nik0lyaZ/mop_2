@@ -26,6 +26,7 @@ class MopFrame : public wxFrame
         void OnAutoVerChecked(wxCommandEvent& evt);
         void OnLateVerChecked(wxCommandEvent& evt);
         void OnPfmChosen(wxCommandEvent& evt);
+        void OnPathChanged(wxCommandEvent& evt);
         #ifdef DEBUG
         void OnTestButton(wxCommandEvent& evt);
         #endif // DEBUG
@@ -42,6 +43,11 @@ class MopFrame : public wxFrame
         wxButton* patchButton = new wxButton(panel, wxID_ANY, "Apply patches!", wxDefaultPosition, wxSize(125, 35));
         wxStaticText* pfmStaticText = new wxStaticText(panel, wxID_ANY, "Platform");
         wxChoice* pfmChoice = new wxChoice(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, platform);
+        wxStaticText* pathStaticText = new wxStaticText(panel, wxID_ANY, "Path to libraries");
+        wxTextCtrl* pathTextCtrl = new wxTextCtrl(panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(140, -1));
+        wxGauge* patchGauge = new wxGauge(panel, wxID_ANY, 160, wxDefaultPosition, wxSize(160, -1));
+        wxStaticText* patchStaticText = new wxStaticText(panel, wxID_ANY, "0.0\%");
+
         #ifdef DEBUG
         wxButton* testButton = new wxButton(panel, wxID_ANY, "Test");
         #endif // DEBUG
