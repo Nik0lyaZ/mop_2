@@ -41,6 +41,7 @@
 					<Add directory="$(#wx)/lib/gcc_dll/mswu" />
 				</ResourceCompiler>
 				<Linker>
+					<Add option="-s" />
 					<Add library="libwxmsw32u.a" />
 					<Add directory="$(#wx)/lib/gcc_dll" />
 				</Linker>

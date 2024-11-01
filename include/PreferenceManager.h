@@ -14,9 +14,9 @@
 #endif // __WIN32__
 
 #ifdef __WIN32__
-#define PATH_SLASH '\\'
+#define PATH_SLASH (std::string)"\\"
 #else
-#define PATH_SLASH '/'
+#define PATH_SLASH (std::string)"/"
 #endif // __WIN32__
 
 #define DIR PATH + PATH_SLASH + DIRNAME
