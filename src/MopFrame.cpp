@@ -227,7 +227,7 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
 
     int libsTotal = (ver < 11 || local) ? 1 : 3;
     if(libsPatched > 0) {
-        if(useAutoVer) SetStatusText(wxString::Format("Automatically patched %d %s.", libsPatched, libsTotal == 1 ? "library" : "libraries"));
+        if(useAutoVer) SetStatusText(wxString::Format("Automatically patched %d %s.", libsPatched, libsPatched == 1 ? "library" : "libraries"));
         else SetStatusText(wxString::Format("Successfully patched %d of %d libraries.", libsPatched, libsTotal));
     }
     else if(libsNotFound >= libsTotal * 2) SetStatusText("Could not find the libraries.");
