@@ -22,7 +22,7 @@
 					<Add directory="$(#wx)/lib/gcc_dll/mswud" />
 				</ResourceCompiler>
 				<Linker>
-					<Add library="libwxmsw32ud.a" />
+					<Add library="libwxmsw33ud.a" />
 					<Add directory="$(#wx)/lib/gcc_dll" />
 				</Linker>
 			</Target>
@@ -42,7 +42,7 @@
 				</ResourceCompiler>
 				<Linker>
 					<Add option="-s" />
-					<Add library="libwxmsw32u.a" />
+					<Add library="libwxmsw33u.a" />
 					<Add directory="$(#wx)/lib/gcc_dll" />
 				</Linker>
 			</Target>
@@ -57,6 +57,7 @@
 			<Add option="-DWXUSINGDLL" />
 			<Add option="-DwxUSE_UNICODE" />
 			<Add directory="$(#wx)/include" />
+			<Add directory="$(#wx)/lib/gcc_dll" />
 		</Compiler>
 		<ResourceCompiler>
 			<Add directory="$(#wx)/include" />
@@ -65,7 +66,9 @@
 			<Add option="-m64" />
 			<Add option="-mthreads" />
 		</Linker>
-		<Unit filename="Versions.txt" />
+		<Unit filename="Versions.txt">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Unit filename="include/App.h" />
 		<Unit filename="include/MopFrame.h" />
 		<Unit filename="include/Patcher.h" />
@@ -78,6 +81,12 @@
 		<Unit filename="src/Patcher.cpp" />
 		<Unit filename="src/PreferenceManager.cpp" />
 		<Extensions>
+			<AutoVersioning>
+				<Scheme minor_max="10" build_max="0" rev_max="0" rev_rand_max="10" build_times_to_increment_minor="100" />
+				<Settings autoincrement="1" date_declarations="1" use_define="0" update_manifest="0" do_auto_increment="0" ask_to_increment="0" language="C++" svn="0" svn_directory="" header_path="version.h" />
+				<Changes_Log show_changes_editor="0" app_title="released version %M.%m.%b of %p" changeslog_path="ChangesLog.txt" />
+				<Code header_guard="VERSION_H" namespace="AutoVersion" prefix="" />
+			</AutoVersioning>
 			<lib_finder disable_auto="1" />
 		</Extensions>
 	</Project>
