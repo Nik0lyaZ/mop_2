@@ -1,18 +1,15 @@
-#include <wx/wx.h>
-#include <wx/spinctrl.h>
-#include <filesystem>
 #include "MopFrame.h"
 #include "Patcher.h"
 #include "PreferenceManager.h"
-#include <wx/choicdlg.h>
+#include <filesystem>
 using namespace std;
 
-// constant arrays
+// Constant arrays
 const wxArrayString version {
     "1.0", "1.01", "1.02", "1.1", "1.11", "1.2", "1.21", "1.22", "1.3", "1.4", "1.41", "1.5", "1.51", "1.6", "1.7", "1.71", "1.8", "1.81", "1.811"
 };
 const wxArrayString platform {
-    "Android", "Windows", "iOS", "MacOS", "Windows phone"
+    "Android"//, "iOS", "Windows", "MacOS", "Windows phone"
 };
 const wxArrayString library {
     "armeabi", "armeabi-v7a", "x86"
@@ -23,19 +20,19 @@ const bool lateVer[] {
 
 // MopFrame constructor
 MopFrame::MopFrame(const wxString& title): wxFrame(nullptr, wxID_ANY, title) {
-    // preferences
+    // Preferences
     prefMgr->LoadFromFile();
 
-    // sizers
+    // Sizers
     mainSizer->Add(prefSizer, wxSizerFlags().Expand().Border(wxALL, 10));
         prefSizer->Add(topSizer, wxSizerFlags().Expand());
             topSizer->Add(pVerSizer);
                 pVerSizer->Add(verSizer);
                     verSizer->Add(verStaticText, staticTextFlags);
                     verSizer->Add(verChoice);
-                pVerSizer->Add(pfmSizer);
-                    pfmSizer->Add(pfmStaticText, staticTextFlags);
-                    pfmSizer->Add(pfmChoice);
+//                pVerSizer->Add(pfmSizer);
+//                    pfmSizer->Add(pfmStaticText, staticTextFlags);
+//                    pfmSizer->Add(pfmChoice);
             #ifdef DEBUG
             topSizer->AddStretchSpacer(1);
             topSizer->Add(testButton, wxSizerFlags().Border(wxLEFT, 10));
@@ -53,7 +50,7 @@ MopFrame::MopFrame(const wxString& title): wxFrame(nullptr, wxID_ANY, title) {
     mainSizer->Add(patchGauge, wxSizerFlags().Align(wxALIGN_CENTER));
     mainSizer->Add(patchButton, wxSizerFlags().Align(wxALIGN_CENTER).Border(wxALL, 10));
 
-    // frame
+    // Frame
     panel->SetSizer(mainSizer);
     mainSizer->SetSizeHints(this);
     wxSize clientSize = GetClientSize();
@@ -61,28 +58,28 @@ MopFrame::MopFrame(const wxString& title): wxFrame(nullptr, wxID_ANY, title) {
     SetMinClientSize(wxSize(clientSize.GetWidth(), clientSize.GetHeight() + patchBtnSize.GetHeight()));
     SetClientSize(320, 320);
 
-    // controls
+    // Controls
     CreateStatusBar();
-    pfmSizer->Show(false);
+//    pfmSizer->Show(false);
     patchButton->SetFocus();
     verChoice->Select(verChoice->FindString(prefMgr->GetVer()));
-    pfmChoice->Select(verChoice->FindString(prefMgr->GetPfm()));
+//    pfmChoice->Select(verChoice->FindString(prefMgr->GetPfm()));
     autoVerCheck->SetValue(prefMgr->GetAutoVer());
-    if(prefMgr->GetLateVer()) {
+    if (prefMgr->GetLateVer()) {
         prefMgr->SetLateVer(true);
         UpdateVerList();
     }
     Update();
 
-    // tooltips
-    patchButton->SetToolTip("Drink some eeffoc and become Cirno"); // <-- peak humor
-    autoVerCheck->SetToolTip("Automatically detect version and library");
-    lateVerCheck->SetToolTip("Show only latest subversions in version list");
+    // Tooltips
+    patchButton->SetToolTip("Drink some eeffoc and become Cirno"); // <-- peak humor // Approved! -21/06/2025
+    autoVerCheck->SetToolTip("Automatically detect the version and library");
+    lateVerCheck->SetToolTip("Show only the latest subversions in version list");
     #ifdef DEBUG
-    testButton->SetToolTip("Test your mother");
+    testButton->SetToolTip("Call an unnecessary window");
     #endif // DEBUG
 
-    // events
+    // Events
     this->Bind(wxEVT_CLOSE_WINDOW, &MopFrame::OnCloseWindow, this);
     patchButton->Bind(wxEVT_BUTTON, &MopFrame::OnPatchClicked, this);
     autoVerCheck->Bind(wxEVT_CHECKBOX, &MopFrame::OnAutoVerChecked, this);
@@ -90,40 +87,40 @@ MopFrame::MopFrame(const wxString& title): wxFrame(nullptr, wxID_ANY, title) {
     objSpinCtrl->Bind(wxEVT_TEXT, &MopFrame::OnObjChanged, this);
     lateVerCheck->Bind(wxEVT_CHECKBOX, &MopFrame::OnLateVerChecked, this);
     lateVerCheck->Bind(wxEVT_CHECKBOX, &MopFrame::OnLateVerChecked, this);
-    pfmChoice->Bind(wxEVT_CHOICE, &MopFrame::OnPfmChosen, this);
+    //pfmChoice->Bind(wxEVT_CHOICE, &MopFrame::OnPfmChosen, this);
     pathTextCtrl->Bind(wxEVT_TEXT, &MopFrame::OnPathChanged, this);
     #ifdef DEBUG
     testButton->Bind(wxEVT_BUTTON, &MopFrame::OnTestButton, this);
     #endif // DEBUG
 }
 
-// update functions
+// Update functions
 void MopFrame::Update() {
     verChoice->SetSelection(verChoice->FindString(prefMgr->GetVer()));
     verChoice->Enable(!prefMgr->GetAutoVer());
     objSpinCtrl->SetValue(prefMgr->GetObj());
     autoVerCheck->SetValue(prefMgr->GetAutoVer());
     lateVerCheck->SetValue(prefMgr->GetLateVer());
-    pfmChoice->SetSelection(pfmChoice->FindString(prefMgr->GetPfm()));
+    //pfmChoice->SetSelection(pfmChoice->FindString(prefMgr->GetPfm()));
     pathTextCtrl->SetValue(prefMgr->GetPath());
 }
 void MopFrame::UpdateVerList() {
-    if(prefMgr->GetLateVer() && verChoice->GetCount() == version.GetCount()) {
+    if (prefMgr->GetLateVer() && verChoice->GetCount() == version.GetCount()) {
         int j = verChoice->GetSelection();
-        while(!lateVer[j] && j < (int)verChoice->GetCount()) j++;
+        while (!lateVer[j] && j < (int)verChoice->GetCount()) j++;
         verChoice->SetSelection(j);
         prefMgr->SetVer(verChoice->GetString(j));
-        for(int i = version.GetCount() - 1; i >= 0; i--) {
-            if(!lateVer[i]) verChoice->Delete(i);
+        for (int i = version.GetCount() - 1; i >= 0; i--) {
+            if (!lateVer[i]) verChoice->Delete(i);
         }
-    } else if(verChoice->GetCount() < version.GetCount()) {
-        for(int i = 0; i < (int)version.GetCount(); i++) {
-            if(!lateVer[i]) verChoice->Insert(version.Item(i), i);
+    } else if (verChoice->GetCount() < version.GetCount()) {
+        for (int i = 0; i < (int)version.GetCount(); i++) {
+            if (!lateVer[i]) verChoice->Insert(version.Item(i), i);
         }
     }
 }
 
-// event functions
+// Event functions
 void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
     patchGauge->SetValue(0);
     patchStaticText->SetLabel("0.0\%");
@@ -131,7 +128,7 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
     SetStatusText("");
     bool useAutoVer = autoVerCheck->GetValue();
     int ver = useAutoVer ? -1 : version.Index(verChoice->GetStringSelection());
-    if(ver == wxNOT_FOUND && !useAutoVer) {
+    if (ver == wxNOT_FOUND && !useAutoVer) {
         SetStatusText("You need to select a version.");
         return;
     }
@@ -143,23 +140,23 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
     string file = ver < 14 ? "libgame.so" : "libcocos2dcpp.so";
 //    vector<int> returns;
 
-    for(int i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++) {
         switch(i) {
         case 0:
             path = ""; break;
         case 1:
             path = "lib" + PATH_SLASH; break;
         }
-        if(i >= 2) break;
+        if (i >= 2) break;
         path = prefMgr->GetPath() + path;
 
         int lib = 0;
-        if(filesystem::exists(path + file)) {
+        if (filesystem::exists(path + file)) {
             local = true;
-            if(ver >= 11 && !useAutoVer) {
+            if (ver >= 11 && !useAutoVer) {
                 wxSingleChoiceDialog dialog(this, "Select your library architecture:", "Library selection", library);
                 int answer = dialog.ShowModal();
-                if(answer == wxID_CANCEL) {
+                if (answer == wxID_CANCEL) {
                     SetStatusText("You have cancelled the operation.");
                     return;
                 }
@@ -167,56 +164,58 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
             }
         }
 
-        while(lib < 3) {
+        while (lib < 3) {
             string libPath = local ? "" : (string)library.Item(lib) + PATH_SLASH;
             bool stop = false, visual = false;
             int approx = 0;
-            if(ver < 0) ver = patcher->GetAutoVer(path + libPath + "libgame.so");
-            if(ver < 0) ver = patcher->GetAutoVer(path + libPath + "libcocos2dcpp.so");
-            if(ver < 0) {lib++; continue;}
+            if (ver < 0) ver = patcher->GetAutoVer(path + libPath + "libgame.so");
+            if (ver < 0) ver = patcher->GetAutoVer(path + libPath + "libcocos2dcpp.so");
+            if (ver < 0) {lib++; continue;}
             file = ver % 100 < 14 ? "libgame.so" : "libcocos2dcpp.so";
 //            wxLogMessage("%d", ver);
 
             do {
                 stop = true;
 //                wxLogMessage("%s, %d, %d, %d, %d, %d", path + libPath + file, ver % 100, obj, useAutoVer ? ver / 100 : lib, approx, visual);
-                int result = patcher->Patch(path + libPath + file, ver % 100, obj, useAutoVer ? ver / 100 : lib, approx, visual);
+                Result result = patcher->Patch(path + libPath + file, ver % 100, obj, useAutoVer ? ver / 100 : lib, approx, visual);
 //                wxLogMessage(wxString(path + libPath + file));
-//                returns.push_back(result);
+//                returns.push_back(static_cast<int>(result));
                 switch(result) {
-                case 1:
-                    patch = 1;
-//                    wxLogMessage("%d", patcher->GetAutoVer(path + libPath + file));
-                    ++libsPatched;
-                    break;
-                case 2: {
-                    int approx0 = patcher->Approx(obj, 0), approx1=patcher->Approx(obj, 1);
-                    wxMessageDialog dialog(this, wxString::Format("This library can't have the limit of %d objects.\nWhat limit do you want to use instead?", obj),
-                                           wxString::Format("Approximation problem in %s", useAutoVer ? library[ver / 100] : library[lib]), wxYES_NO | wxICON_WARNING | wxCENTER | wxNO_DEFAULT);
-                    dialog.SetYesNoLabels(wxString::Format("%d", approx0), wxString::Format("%d", approx1));
-                    int answer1 = dialog.ShowModal();
-                    approx = answer1 == wxYES ? approx1 : approx0;
-                    int answer2 = wxMessageBox("The game may round the object limit (e.g., 516 -> 512, 4992 -> 5000).\nDo you want to show the unrounded numbers in popup and counter?",
+                    case Result::OK:
+                        patch = 1;
+    //                    wxLogMessage("%d", patcher->GetAutoVer(path + libPath + file));
+                        ++libsPatched;
+                        break;
+                    case Result::ApproxReq: {
+                        int approx0 = patcher->Approx(obj, 0), approx1=patcher->Approx(obj, 1);
+                        wxMessageDialog dialog(this, wxString::Format("This library can't have the limit of %d objects.\nWhat limit do you want to use instead?", obj),
                                                wxString::Format("Approximation problem in %s", useAutoVer ? library[ver / 100] : library[lib]), wxYES_NO | wxICON_WARNING | wxCENTER | wxNO_DEFAULT);
-                    visual = answer2 == wxYES;
-                    stop = false;
-                    break;
+                        dialog.SetYesNoLabels(wxString::Format("%d", approx0), wxString::Format("%d", approx1));
+                        int answer1 = dialog.ShowModal();
+                        approx = answer1 == wxYES ? approx1 : approx0;
+                        int answer2 = wxMessageBox("The game may round the object limit (e.g. 516 -> 512, 4992 -> 5000).\nDo you want to show the unrounded numbers in popup and counter?",
+                                                   wxString::Format("Approximation problem in %s", useAutoVer ? library[ver / 100] : library[lib]), wxYES_NO | wxICON_WARNING | wxCENTER | wxNO_DEFAULT);
+                        visual = answer2 == wxYES;
+                        stop = false;
+                        break;
+                    }
+                    case Result::FileError:
+                        ++libsNotFound;
+                        break;
+                    default:
+                        break;
                 }
-                case 3:
-                    ++libsNotFound;
-                    break;
-                }
-            } while(stop != true);
+            } while (stop != true);
 
-            if(local || (ver < 11 && !useAutoVer)) break;
-            if(useAutoVer) ver = -1;
+            if (local || (ver < 11 && !useAutoVer)) break;
+            if (useAutoVer) ver = -1;
             lib++;
             float percentage = float(3 * i + lib) / 6.0 * 100.0;
             patchGauge->SetValue(percentage * 1.6);
             patchStaticText->SetLabel(wxString::Format("%.1f\%", percentage));
             mainSizer->Layout();
         }
-        if(patch == 1) break;
+        if (patch == 1) break;
     }
 
     delete patcher;
@@ -226,18 +225,19 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
     mainSizer->Layout();
 
     int libsTotal = (ver < 11 || local) ? 1 : 3;
-    if(libsPatched > 0) {
-        if(useAutoVer) SetStatusText(wxString::Format("Automatically patched %d %s.", libsPatched, libsPatched == 1 ? "library" : "libraries"));
+    if (libsPatched > 0) {
+        if (useAutoVer) SetStatusText(wxString::Format("Automatically patched %d %s.", libsPatched, libsPatched == 1 ? "library" : "libraries"));
         else SetStatusText(wxString::Format("Successfully patched %d of %d libraries.", libsPatched, libsTotal));
     }
-    else if(libsNotFound >= libsTotal * 2) SetStatusText("Could not find the libraries.");
+    else if (libsNotFound >= libsTotal * 2) SetStatusText("Could not find the libraries.");
     else SetStatusText("None of the libraries could be patched.");
 
 //    string temp = "";
-//    for(auto& x : returns) temp += to_string(x) + " ";
+//    for (auto& x : returns) temp += to_string(x) + " ";
 //    wxLogStatus("Patch result: %d, returns %s", patch, temp);
-
 }
+
+// Button callbacks
 void MopFrame::OnCloseWindow(wxCloseEvent& evt) {
     prefMgr->SaveToFile();
     evt.Skip();
@@ -256,16 +256,15 @@ void MopFrame::OnLateVerChecked(wxCommandEvent& evt) {
     prefMgr->SetLateVer(evt.GetInt());
     UpdateVerList();
 }
-void MopFrame::OnPfmChosen(wxCommandEvent& evt) {
-    prefMgr->SetPfm(evt.GetString());
-}
+//void MopFrame::OnPfmChosen(wxCommandEvent& evt) {
+//    prefMgr->SetPfm(evt.GetString());
+//}
 void MopFrame::OnPathChanged(wxCommandEvent& evt) {
     prefMgr->SetPath(evt.GetString());
 }
-
-// debug event functions
-#ifdef DEBUG
+#ifdef DEBUG // Debug button callbacks
 void MopFrame::OnTestButton(wxCommandEvent& evt) {
-    wxMessageBox("You are adopted.", "Error", wxICON_ERROR);
+    // No more offensive jokes here.
+    wxMessageBox("This is a debug pop-up. You're welcome!", "Hello", wxICON_INFORMATION);
 }
 #endif // DEBUG
