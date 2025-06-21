@@ -22,8 +22,7 @@
 #define DIR PATH + PATH_SLASH + DIRNAME
 #define SAVE DIR + PATH_SLASH + SAVENAME
 
-struct Preferences
-{
+struct Preferences {
     std::string ver;
     int obj = 16384;
     bool autoVer = false,
@@ -32,46 +31,46 @@ struct Preferences
     std::string path = "";
 };
 
-class PreferenceManager
-{
-    private:
-        Preferences prefs;
-    public:
-        PreferenceManager(wxString ver, wxString pfm) {
-            prefs.ver = ver;
-            prefs.pfm = pfm;
-        }
-        bool SaveToFile();
-        bool LoadFromFile();
+class PreferenceManager {
+private:
+    Preferences prefs;
 
-        // Game version
-        wxString GetVer() {return prefs.ver;}
-        void SetVer(wxString value) {prefs.ver = value;}
+public:
+    PreferenceManager(wxString ver, wxString pfm) {
+        prefs.ver = ver;
+        prefs.pfm = pfm;
+    }
+    bool SaveToFile();
+    bool LoadFromFile();
 
-        // Object count
-        int GetObj() {return prefs.obj;}
-        void SetObj(int value) {prefs.obj = value;}
+    // Game version
+    inline wxString GetVer() {return prefs.ver;}
+    inline void SetVer(wxString value) {prefs.ver = value;}
 
-        // Auto-detect
-        bool GetAutoVer() {return prefs.autoVer;}
-        void SetAutoVer(bool value) {prefs.autoVer = value;}
+    // Object count
+    inline int GetObj() {return prefs.obj;}
+    inline void SetObj(int value) {prefs.obj = value;}
 
-        // Show only the latest releases
-        bool GetLateVer() {return prefs.lateVer;}
-        void SetLateVer(bool value) {prefs.lateVer = value;}
+    // Auto-detect
+    inline bool GetAutoVer() {return prefs.autoVer;}
+    inline void SetAutoVer(bool value) {prefs.autoVer = value;}
 
-        // Platform
-        wxString GetPfm() {return prefs.pfm;}
-        void SetPfm(wxString value) {prefs.pfm = value;}
+    // Show only the latest releases
+    inline bool GetLateVer() {return prefs.lateVer;}
+    inline void SetLateVer(bool value) {prefs.lateVer = value;}
 
-        // Path to libraries
-        wxString GetPath() {
-            if(!prefs.path.size()) return "";
-            if(prefs.path.front() == '/' || prefs.path.front() == '\\')
-                return prefs.path;
-            return prefs.path + PATH_SLASH;
-        }
-        void SetPath(wxString value) {prefs.path = value;}
+    // Platform
+    inline wxString GetPfm() {return prefs.pfm;}
+//    void SetPfm(wxString value) {prefs.pfm = value;}
+
+    // Path to libraries
+    inline wxString GetPath() {
+        if (!prefs.path.size()) return "";
+        if (prefs.path.front() == '/' || prefs.path.front() == '\\')
+            return prefs.path;
+        return prefs.path + PATH_SLASH;
+    }
+    inline void SetPath(wxString value) {prefs.path = value;}
 };
 
 #endif // PREFERENCEMANAGER_H

@@ -1,11 +1,9 @@
-#include <vector>
-#include <fstream>
-#include <filesystem>
 #include "PreferenceManager.h"
+#include <filesystem>
+#include <fstream>
 
-bool PreferenceManager::SaveToFile()
-{
-    if(!std::filesystem::exists(DIR) && !std::filesystem::create_directories(DIR))
+bool PreferenceManager::SaveToFile() {
+    if (!std::filesystem::exists(DIR) && !std::filesystem::create_directories(DIR))
         return false;
     std::ofstream file(SAVE);
 
@@ -22,9 +20,8 @@ bool PreferenceManager::SaveToFile()
     return true;
 }
 
-bool PreferenceManager::LoadFromFile()
-{
-    if(!std::filesystem::exists(DIR)) return false;
+bool PreferenceManager::LoadFromFile() {
+    if (!std::filesystem::exists(DIR)) return false;
     std::ifstream file(SAVE);
 
     // Preferences to load
@@ -34,14 +31,14 @@ bool PreferenceManager::LoadFromFile()
     file >> prefs.lateVer;
     file >> prefs.pfm;
     file >> prefs.path;
-    if(prefs.path.front() == '"' && prefs.path.back() != '"') {
+    if (prefs.path.front() == '"' && prefs.path.back() != '"') {
         std::string s = "";
-        while(s.back() != '"' && file >> s) {
+        while (s.back() != '"' && file >> s) {
             prefs.path += ' ' + s;
         }
     }
     std::replace(prefs.pfm.begin(), prefs.pfm.end(), '_', ' ');
-    while(prefs.path.find('"') != std::string::npos) prefs.path.erase(prefs.path.find('"'), 1);
+    while (prefs.path.find('"') != std::string::npos) prefs.path.erase(prefs.path.find('"'), 1);
 
     file.close();
     return true;

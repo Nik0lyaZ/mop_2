@@ -2,10 +2,9 @@
 #define APP_H
 #include <wx/wx.h>
 
-class App : public wxApp
-{
-    public:
-        bool OnInit();
+class App : public wxApp {
+public:
+    bool OnInit();
 };
 
 #endif // APP_H
