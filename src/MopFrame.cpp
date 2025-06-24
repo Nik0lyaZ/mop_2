@@ -139,14 +139,9 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
     bool local = false;
     string file = ver < 14 ? "libgame.so" : "libcocos2dcpp.so";
 //    vector<int> returns;
-    for (int& i = patcher->m_lib = 0; i < 3; i++) {
-        switch(i) {
-            case 0:
-                path = ""; break;
-            case 1:
-                path = "lib" + PATH_SLASH; break;
-        }
-        if (i >= 2) break;
+
+    for (int i = 0; i < 2; i++) {
+        path = i ? "lib" + PATH_SLASH : "";
         path = prefMgr->GetPath() + path;
 
         int lib = 0;
