@@ -1,7 +1,8 @@
 bin/
 obj/
 lib/
-*.dll
 *.layout
 *.depend
+*.cscope_file_list
+*.dll
 *.apk

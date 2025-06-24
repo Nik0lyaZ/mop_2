@@ -140,14 +140,8 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
     string file = ver < 14 ? "libgame.so" : "libcocos2dcpp.so";
 //    vector<int> returns;
 
-    for (int i = 0; i < 3; i++) {
-        switch(i) {
-        case 0:
-            path = ""; break;
-        case 1:
-            path = "lib" + PATH_SLASH; break;
-        }
-        if (i >= 2) break;
+    for (int i = 0; i < 2; i++) {
+        path = i ? "lib" + PATH_SLASH : "";
         path = prefMgr->GetPath() + path;
 
         int lib = 0;
@@ -166,8 +160,9 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
 
         while (lib < 3) {
             string libPath = local ? "" : (string)library.Item(lib) + PATH_SLASH;
-            bool stop = false, visual = false;
-            int approx = 0;
+            bool stop = false;
+            patcher->m_visual = false;
+            patcher->m_approx = 0;
             if (ver < 0) ver = patcher->GetAutoVer(path + libPath + "libgame.so");
             if (ver < 0) ver = patcher->GetAutoVer(path + libPath + "libcocos2dcpp.so");
             if (ver < 0) {lib++; continue;}
@@ -177,7 +172,9 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
             do {
                 stop = true;
 //                wxLogMessage("%s, %d, %d, %d, %d, %d", path + libPath + file, ver % 100, obj, useAutoVer ? ver / 100 : lib, approx, visual);
-                Result result = patcher->Patch(path + libPath + file, ver % 100, obj, useAutoVer ? ver / 100 : lib, approx, visual);
+//                Result result = patcher->Patch(path + libPath + file, ver % 100, obj, useAutoVer ? ver / 100 : lib, approx, visual);
+                patcher->Prepare(path + libPath + file, obj, ver % 100, useAutoVer ? ver / 100 : lib);
+                Result result = patcher->Patch();
 //                wxLogMessage(wxString(path + libPath + file));
 //                returns.push_back(static_cast<int>(result));
                 switch(result) {
@@ -192,10 +189,10 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
                                                wxString::Format("Approximation problem in %s", useAutoVer ? library[ver / 100] : library[lib]), wxYES_NO | wxICON_WARNING | wxCENTER | wxNO_DEFAULT);
                         dialog.SetYesNoLabels(wxString::Format("%d", approx0), wxString::Format("%d", approx1));
                         int answer1 = dialog.ShowModal();
-                        approx = answer1 == wxYES ? approx1 : approx0;
+                        patcher->m_approx = answer1 == wxYES ? approx1 : approx0;
                         int answer2 = wxMessageBox("The game may round the object limit (e.g. 516 -> 512, 4992 -> 5000).\nDo you want to show the unrounded numbers in popup and counter?",
                                                    wxString::Format("Approximation problem in %s", useAutoVer ? library[ver / 100] : library[lib]), wxYES_NO | wxICON_WARNING | wxCENTER | wxNO_DEFAULT);
-                        visual = answer2 == wxYES;
+                        patcher->m_visual = answer2 == wxYES;
                         stop = false;
                         break;
                     }
@@ -266,5 +263,9 @@ void MopFrame::OnPathChanged(wxCommandEvent& evt) {
 void MopFrame::OnTestButton(wxCommandEvent& evt) {
     // No more offensive jokes here.
     wxMessageBox("This is a debug pop-up. You're welcome!", "Hello", wxICON_INFORMATION);
+
+//    Patcher* patcher = new Patcher();
+//    patcher->Test();
+//    delete patcher;
 }
 #endif // DEBUG
