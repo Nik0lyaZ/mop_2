@@ -4,6 +4,15 @@
 #include <filesystem>
 using namespace std;
 
+#ifdef DEBUG
+void MopFrame::Test() {
+    Patcher* patcher = new Patcher();
+    patcher->Test();
+    delete patcher;
+    this->Close();
+}
+#endif // DEBUG
+
 // Constant arrays
 const wxArrayString version {
     "1.0", "1.01", "1.02", "1.1", "1.11", "1.2", "1.21", "1.22", "1.3", "1.4", "1.41", "1.5", "1.51", "1.6", "1.7", "1.71", "1.8", "1.81", "1.811"
@@ -133,7 +142,7 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
         return;
     }
     unsigned obj = objSpinCtrl->GetValue();
-    Patcher* patcher = new Patcher;
+    Patcher* patcher = new Patcher();
     string path = "";
     int patch = 0, libsPatched = 0, libsNotFound = 0;
     bool local = false;
@@ -189,7 +198,7 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
                                                wxString::Format("Approximation problem in %s", useAutoVer ? library[ver / 100] : library[lib]), wxYES_NO | wxICON_WARNING | wxCENTER | wxNO_DEFAULT);
                         dialog.SetYesNoLabels(wxString::Format("%d", approx0), wxString::Format("%d", approx1));
                         int answer1 = dialog.ShowModal();
-                        patcher->m_approx = answer1 == wxYES ? approx1 : approx0;
+                        patcher->m_approx = answer1 == wxID_YES ? approx0 : approx1;
                         int answer2 = wxMessageBox("The game may round the object limit (e.g. 516 -> 512, 4992 -> 5000).\nDo you want to show the unrounded numbers in popup and counter?",
                                                    wxString::Format("Approximation problem in %s", useAutoVer ? library[ver / 100] : library[lib]), wxYES_NO | wxICON_WARNING | wxCENTER | wxNO_DEFAULT);
                         patcher->m_visual = answer2 == wxYES;
@@ -263,9 +272,6 @@ void MopFrame::OnPathChanged(wxCommandEvent& evt) {
 void MopFrame::OnTestButton(wxCommandEvent& evt) {
     // No more offensive jokes here.
     wxMessageBox("This is a debug pop-up. You're welcome!", "Hello", wxICON_INFORMATION);
-
-//    Patcher* patcher = new Patcher();
-//    patcher->Test();
-//    delete patcher;
+    Test();
 }
 #endif // DEBUG
