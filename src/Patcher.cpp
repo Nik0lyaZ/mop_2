@@ -5,6 +5,18 @@
 #endif // DEBUG
 using namespace std;
 
+#ifdef DEBUG
+void Patcher::Test() {
+    m_file.open("test.txt", ios::in | ios::out | ios::binary);
+    Write(0, "\x0\x0\x0\x0");
+
+    obj = 5000;
+    Write(0, Cmp);
+
+    m_file.close();
+}
+#endif // DEBUG
+
 Patcher::Patcher() {}
 
 Patcher::Patcher(string filename, unsigned obj, int ver, int lib, unsigned approx, bool visual) {
@@ -60,7 +72,7 @@ void Patcher::Dword(char* a) {
     }
 }
 
-// Replaces the value in MOV.W instruction bytes
+// Replaces the value in MOVW instruction bytes
 void Patcher::Mov(char* a) {
     obj = min(obj, 65535U);
     unsigned char reg = *(a + 3);
@@ -288,6 +300,7 @@ Result Patcher::Patch() {
                 Write(TABLE[1][ver - 13], Mov); // Popup
                 Write(TABLE[2][ver - 13], obj == 0 ? THUMB_NOP : "\x02\xDD"); // Zero object toggle (Create)
                 Write(TABLE[3][ver - 13], obj == 0 ? THUMB_NOP : "\xEB\xDB"); // (Duplicate)
+//                wxLogMessage("%d and %d, sir", m_approx, obj);
                 obj = m_approx; // Using approximation
                 if (obj) --obj;
                 Write(TABLE[4][ver - 13], Cmp); // Create
@@ -389,9 +402,3 @@ Result Patcher::Patch() {
     m_file.close();
     return Result::OK;
 }
-
-#ifdef DEBUG
-void Patcher::Test() {
-    ;
-}
-#endif // DEBUG

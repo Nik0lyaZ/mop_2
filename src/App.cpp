@@ -8,5 +8,8 @@ bool App::OnInit() {
     mopFrame->SetIcon(wxICON(aaaa));
     mopFrame->Center();
     mopFrame->Show();
+    #ifdef DEBUG
+//    mopFrame->Test();
+    #endif // DEBUG
     return true;
 }
