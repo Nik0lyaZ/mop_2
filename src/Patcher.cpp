@@ -295,14 +295,22 @@ Result Patcher::Patch() {
                     {0x14E97E}
                 };
                 if (!CheckApprox(obj)) {if (!m_approx) {m_file.close(); return Result::ApproxReq;}}
-                else m_approx = obj;
+                else obj = m_visual ? m_approx : m_obj;
+//                wxLogMessage("visual=%d, resultobj=%d", m_visual, obj);
                 Write(TABLE[0][ver - 13], Mov); // Counter
                 Write(TABLE[1][ver - 13], Mov); // Popup
                 Write(TABLE[2][ver - 13], obj == 0 ? THUMB_NOP : "\x02\xDD"); // Zero object toggle (Create)
                 Write(TABLE[3][ver - 13], obj == 0 ? THUMB_NOP : "\xEB\xDB"); // (Duplicate)
 //                wxLogMessage("%d and %d, sir", m_approx, obj);
                 obj = m_approx; // Using approximation
-                if (obj) --obj;
+                if(obj <= 256) {
+                    if (obj) --obj;
+                    Write(0x150050, "\x02\xDB\xFE\xF7\x35\xF9\x03\xE0\xD4\xF8\xC4\x11\xFF");
+                    Write(0x15005E, "\xA8\xFE");
+                } else {
+                    Write(0x150050, "\x04\xDA\xD4\xF8\xC4\x11\xFF\xF7\xAB\xFE\x01\xE0\xFE");
+                    Write(0x15005E, "\x30\xF9");
+                }
                 Write(TABLE[4][ver - 13], Cmp); // Create
                 Write(TABLE[5][ver - 13], Cmp); // Duplicate
             }
