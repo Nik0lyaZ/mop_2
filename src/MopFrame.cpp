@@ -192,10 +192,10 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
                                                wxString::Format("Approximation problem in %s", useAutoVer ? library[ver / 100] : library[lib]), wxYES_NO | wxICON_WARNING | wxCENTER | wxNO_DEFAULT);
                         dialog.SetYesNoLabels(wxString::Format("%d", approx0), wxString::Format("%d", approx1));
                         int answer1 = dialog.ShowModal();
-                        approx = answer1 == wxYES ? approx1 : approx0;
+                        approx = answer1 == wxID_YES ? approx0 : approx1;
                         int answer2 = wxMessageBox("The game may round the object limit (e.g. 516 -> 512, 4992 -> 5000).\nDo you want to show the unrounded numbers in popup and counter?",
                                                    wxString::Format("Approximation problem in %s", useAutoVer ? library[ver / 100] : library[lib]), wxYES_NO | wxICON_WARNING | wxCENTER | wxNO_DEFAULT);
-                        visual = answer2 == wxYES;
+                        visual = answer2 == wxID_YES;
                         stop = false;
                         break;
                     }
