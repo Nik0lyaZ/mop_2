@@ -10,7 +10,7 @@ void Patcher::Test() {
     m_file.open("test.txt", ios::in | ios::out | ios::binary);
     Write(0, "\x0\x0\x0\x0");
 
-    obj = 5000;
+    obj = Approx(5000, 1);
     Write(0, Cmp);
 
     m_file.close();
@@ -19,10 +19,9 @@ void Patcher::Test() {
 
 Patcher::Patcher() {}
 
-Patcher::Patcher(string filename, unsigned obj, int ver, int lib, unsigned approx, bool visual) {
+Patcher::Patcher(string filename, unsigned obj, int ver, int lib, unsigned approx) {
     Prepare(filename, obj, ver, lib);
     m_approx = approx;
-    m_visual = visual;
 }
 
 void Patcher::Prepare(string filename, unsigned obj, int ver, int lib) {
@@ -167,7 +166,7 @@ Result Patcher::Patch() {
     m_file.open(m_filename, ios::in | ios::out | ios::binary);
     if (!m_file) return Result::FileError;
 
-    obj = m_visual ? m_approx : m_obj;
+    obj = m_approx ? m_approx : m_obj;
     ver = m_ver, lib = m_lib;
 
     switch(lib) {
@@ -278,7 +277,7 @@ Result Patcher::Patch() {
                 };
                 Write(TABLE[0][ver - 11], Mov); // Popup
                 Write(TABLE[1][ver - 11], obj == 0 ? THUMB_NOP : "\x02\xDD"); // Zero object toggle (Create)
-                Write(TABLE[2][ver - 11], obj == 0 ? THUMB_NOP : "\xEA\xDD"); // (Duplicate)
+                Write(TABLE[2][ver - 11], obj == 0 ? THUMB_NOP : "\xEA\xDD"); // Zero object toggle (Duplicate)
                 if (obj) --obj;
                 Write(TABLE[3][ver - 11], Mov); // Create
                 Write(TABLE[4][ver - 11], Mov); // Duplicate
@@ -295,22 +294,12 @@ Result Patcher::Patch() {
                     {0x14E97E}
                 };
                 if (!CheckApprox(obj)) {if (!m_approx) {m_file.close(); return Result::ApproxReq;}}
-                else obj = m_visual ? m_approx : m_obj;
-//                wxLogMessage("visual=%d, resultobj=%d", m_visual, obj);
+                else m_approx = obj;
                 Write(TABLE[0][ver - 13], Mov); // Counter
                 Write(TABLE[1][ver - 13], Mov); // Popup
-                Write(TABLE[2][ver - 13], obj == 0 ? THUMB_NOP : "\x02\xDD"); // Zero object toggle (Create)
-                Write(TABLE[3][ver - 13], obj == 0 ? THUMB_NOP : "\xEB\xDB"); // (Duplicate)
-//                wxLogMessage("%d and %d, sir", m_approx, obj);
+                Write(TABLE[2][ver - 13], obj == 0 ? THUMB_NOP : "\x02\xDB"); // Zero object toggle (Create)
+                Write(TABLE[3][ver - 13], obj == 0 ? THUMB_NOP : "\xEB\xDB"); // Zero object toggle (Duplicate)
                 obj = m_approx; // Using approximation
-                if(obj <= 256) {
-                    if (obj) --obj;
-                    Write(0x150050, "\x02\xDB\xFE\xF7\x35\xF9\x03\xE0\xD4\xF8\xC4\x11\xFF");
-                    Write(0x15005E, "\xA8\xFE");
-                } else {
-                    Write(0x150050, "\x04\xDA\xD4\xF8\xC4\x11\xFF\xF7\xAB\xFE\x01\xE0\xFE");
-                    Write(0x15005E, "\x30\xF9");
-                }
                 Write(TABLE[4][ver - 13], Cmp); // Create
                 Write(TABLE[5][ver - 13], Cmp); // Duplicate
             }
@@ -343,7 +332,7 @@ Result Patcher::Patch() {
                     case 17:
                     case 18: THUMB_BLE = "\xE5\xDD"; break;
                 }
-                Write(TABLE[3][ver - 14], (obj == 0 ? THUMB_NOP : THUMB_BLE)); // (Duplicate)
+                Write(TABLE[3][ver - 14], (obj == 0 ? THUMB_NOP : THUMB_BLE)); // Zero object toggle (Duplicate)
                 if (obj) --obj;
                 Write(TABLE[4][ver - 14], Mov); // Create
                 Write(TABLE[5][ver - 14], Mov); // Duplicate
