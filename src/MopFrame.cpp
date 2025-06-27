@@ -102,7 +102,7 @@ MopFrame::MopFrame(const wxString& title): wxFrame(nullptr, wxID_ANY, title) {
     #endif // DEBUG
 }
 
-// Update functions
+// Update methods
 void MopFrame::Update() {
     verChoice->SetSelection(verChoice->FindString(prefMgr->GetVer()));
     verChoice->Enable(!prefMgr->GetAutoVer());
@@ -128,7 +128,7 @@ void MopFrame::UpdateVerList() {
     }
 }
 
-// Event functions
+// Event methods
 void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
     patchGauge->SetValue(0);
     patchStaticText->SetLabel("0.0\%");
@@ -238,7 +238,7 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
 //    wxLogStatus("Patch result: %d, returns %s", patch, temp);
 }
 
-// Button callbacks
+// Control callbacks
 void MopFrame::OnCloseWindow(wxCloseEvent& evt) {
     prefMgr->SaveToFile();
     evt.Skip();
@@ -263,7 +263,7 @@ void MopFrame::OnLateVerChecked(wxCommandEvent& evt) {
 void MopFrame::OnPathChanged(wxCommandEvent& evt) {
     prefMgr->SetPath(evt.GetString());
 }
-#ifdef DEBUG // Debug button callbacks
+#ifdef DEBUG // Debug control callbacks
 void MopFrame::OnTestButton(wxCommandEvent& evt) {
     // No more offensive jokes here.
     wxMessageBox("This is a debug pop-up. You're welcome!", "Hello", wxICON_INFORMATION);

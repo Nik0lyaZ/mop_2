@@ -18,7 +18,7 @@ private:
 // Preferences
     PreferenceManager* prefMgr = new PreferenceManager(version[0], platform[0]);
 
-// Functions
+// Methods
     void Update();
     void UpdateVerList();
     void OnCloseWindow(wxCloseEvent& evt);
