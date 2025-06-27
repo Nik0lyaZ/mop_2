@@ -9,7 +9,7 @@ bool App::OnInit() {
     mopFrame->Center();
     mopFrame->Show();
     #ifdef DEBUG
-//    mopFrame->Test();
+//    mopFrame->Test(); mopFrame->Close();
     #endif // DEBUG
     return true;
 }
