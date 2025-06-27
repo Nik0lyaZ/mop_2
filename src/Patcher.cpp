@@ -276,10 +276,9 @@ Result Patcher::Patch(string filename, int p_ver, unsigned p_obj, int p_lib, uns
                 else approx = obj;
                 Write(TABLE[0][ver - 13], Mov); // Counter
                 Write(TABLE[1][ver - 13], Mov); // Popup
-                Write(TABLE[2][ver - 13], obj <= 0 ? THUMB_NOP : string{'\x02', '\xDD'}); // Zero object toggle (Create)
+                Write(TABLE[2][ver - 13], obj <= 0 ? THUMB_NOP : string{'\x02', '\xDB'}); // Zero object toggle (Create)
                 Write(TABLE[3][ver - 13], obj <= 0 ? THUMB_NOP : string{'\xEB', '\xDB'}); // (Duplicate)
                 obj = approx; // Using approximation
-                if (obj) --obj;
                 Write(TABLE[4][ver - 13], Cmp); // Create
                 Write(TABLE[5][ver - 13], Cmp); // Duplicate
             }
