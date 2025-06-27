@@ -5,7 +5,7 @@
 #include <iostream>
 
 enum class Result {
-    OK, LibWrong, LibInvalid, VerInvalid, PfmInvalid, ApproxReq, VerifyReq, FileError
+    OK, LibWrong, LibInvalid, VerInvalid, PfmInvalid, ApproxReq, FileError
 };
 
 /*
@@ -16,15 +16,14 @@ enum class Result {
     4. Invalid version - pretty much the same as LibInvalid but for version IDs
     5. Invalid platform - upcoming feature...
     6. Approximation question request (for the corresponding dialog)
-    7. Verification request - verify if the correct file is loaded
-    8. File error - the file couldn't be opened...
+    7. File error - the file couldn't be opened
 */
 
 class Patcher {
 public:
     // Constructors
     Patcher();
-    Patcher(std::string filename, unsigned obj, int ver, int lib, unsigned approx = 0, bool visual = false);
+    Patcher(std::string filename, unsigned obj, int ver, int lib, unsigned approx = 0);
 
     // Functions
     Result Patch();
@@ -43,7 +42,6 @@ public:
     int m_ver = -2; // because -1 is used by autover (might change that)
     int m_lib = -1;
     unsigned m_approx = 0;
-    bool m_visual = false;
 
 protected:
     // Functions
