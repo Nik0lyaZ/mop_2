@@ -9,7 +9,6 @@ void MopFrame::Test() {
     Patcher* patcher = new Patcher();
     patcher->Test();
     delete patcher;
-    this->Close();
 }
 #endif // DEBUG
 
@@ -170,7 +169,6 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
         while (lib < 3) {
             string libPath = local ? "" : (string)library.Item(lib) + PATH_SLASH;
             bool stop = false;
-            patcher->m_visual = false;
             patcher->m_approx = 0;
             if (ver < 0) ver = patcher->GetAutoVer(path + libPath + "libgame.so");
             if (ver < 0) ver = patcher->GetAutoVer(path + libPath + "libcocos2dcpp.so");
@@ -199,9 +197,6 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
                         dialog.SetYesNoLabels(wxString::Format("%d", approx0), wxString::Format("%d", approx1));
                         int answer1 = dialog.ShowModal();
                         patcher->m_approx = answer1 == wxID_YES ? approx0 : approx1;
-                        int answer2 = wxMessageBox("The game may round the object limit (e.g. 516 -> 512, 4992 -> 5000).\nDo you want to show the unrounded numbers in popup and counter?",
-                                                   wxString::Format("Approximation problem in %s", useAutoVer ? library[ver / 100] : library[lib]), wxYES_NO | wxICON_WARNING | wxCENTER | wxNO_DEFAULT);
-                        patcher->m_visual = answer2 == wxYES;
                         stop = false;
                         break;
                     }
