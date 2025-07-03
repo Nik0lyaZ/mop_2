@@ -4,6 +4,14 @@
 #include <filesystem>
 using namespace std;
 
+#ifdef DEBUG
+void MopFrame::Test() {
+    Patcher* patcher = new Patcher();
+    patcher->Test();
+    delete patcher;
+}
+#endif // DEBUG
+
 // Constant arrays
 const wxArrayString version {
     "1.0", "1.01", "1.02", "1.1", "1.11", "1.2", "1.21", "1.22", "1.3", "1.4", "1.41", "1.5", "1.51", "1.6", "1.7", "1.71", "1.8", "1.81", "1.811"
@@ -133,21 +141,15 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
         return;
     }
     unsigned obj = objSpinCtrl->GetValue();
-    Patcher* patcher = new Patcher;
+    Patcher* patcher = new Patcher();
     string path = "";
     int patch = 0, libsPatched = 0, libsNotFound = 0;
     bool local = false;
     string file = ver < 14 ? "libgame.so" : "libcocos2dcpp.so";
 //    vector<int> returns;
 
-    for (int i = 0; i < 3; i++) {
-        switch(i) {
-        case 0:
-            path = ""; break;
-        case 1:
-            path = "lib" + PATH_SLASH; break;
-        }
-        if (i >= 2) break;
+    for (int i = 0; i < 2; i++) {
+        path = i ? "lib" + PATH_SLASH : "";
         path = prefMgr->GetPath() + path;
 
         int lib = 0;
@@ -166,8 +168,8 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
 
         while (lib < 3) {
             string libPath = local ? "" : (string)library.Item(lib) + PATH_SLASH;
-            bool stop = false, visual = false;
-            int approx = 0;
+            bool stop = false;
+            patcher->m_approx = 0;
             if (ver < 0) ver = patcher->GetAutoVer(path + libPath + "libgame.so");
             if (ver < 0) ver = patcher->GetAutoVer(path + libPath + "libcocos2dcpp.so");
             if (ver < 0) {lib++; continue;}
@@ -177,7 +179,9 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
             do {
                 stop = true;
 //                wxLogMessage("%s, %d, %d, %d, %d, %d", path + libPath + file, ver % 100, obj, useAutoVer ? ver / 100 : lib, approx, visual);
-                Result result = patcher->Patch(path + libPath + file, ver % 100, obj, useAutoVer ? ver / 100 : lib, approx, visual);
+//                Result result = patcher->Patch(path + libPath + file, ver % 100, obj, useAutoVer ? ver / 100 : lib, approx, visual);
+                patcher->Prepare(path + libPath + file, obj, ver % 100, useAutoVer ? ver / 100 : lib);
+                Result result = patcher->Patch();
 //                wxLogMessage(wxString(path + libPath + file));
 //                returns.push_back(static_cast<int>(result));
                 switch(result) {
@@ -192,10 +196,7 @@ void MopFrame::OnPatchClicked(wxCommandEvent& evt) {
                                                wxString::Format("Approximation problem in %s", useAutoVer ? library[ver / 100] : library[lib]), wxYES_NO | wxICON_WARNING | wxCENTER | wxNO_DEFAULT);
                         dialog.SetYesNoLabels(wxString::Format("%d", approx0), wxString::Format("%d", approx1));
                         int answer1 = dialog.ShowModal();
-                        approx = answer1 == wxID_YES ? approx0 : approx1;
-                        int answer2 = wxMessageBox("Do you want to use approximations for the pop-up and the counter as well?",
-                                                   wxString::Format("Approximation problem in %s", useAutoVer ? library[ver / 100] : library[lib]), wxYES_NO | wxICON_WARNING | wxCENTER | wxNO_DEFAULT);
-                        visual = answer2 == wxYES;
+                        patcher->m_approx = answer1 == wxID_YES ? approx0 : approx1;
                         stop = false;
                         break;
                     }
@@ -266,5 +267,6 @@ void MopFrame::OnPathChanged(wxCommandEvent& evt) {
 void MopFrame::OnTestButton(wxCommandEvent& evt) {
     // No more offensive jokes here.
     wxMessageBox("This is a debug pop-up. You're welcome!", "Hello", wxICON_INFORMATION);
+    Test();
 }
 #endif // DEBUG

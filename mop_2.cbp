@@ -49,7 +49,6 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
-			<Add option="-m64" />
 			<Add option="-pipe" />
 			<Add option="-mthreads" />
 			<Add option="-D__GNUWIN32__" />
@@ -63,7 +62,6 @@
 			<Add directory="$(#wx)/include" />
 		</ResourceCompiler>
 		<Linker>
-			<Add option="-m64" />
 			<Add option="-mthreads" />
 		</Linker>
 		<Unit filename="Versions.txt">
