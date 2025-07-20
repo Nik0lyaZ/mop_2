@@ -11,4 +11,4 @@ Make sure you have the same version of dll as the release!
 - Compiler flags: C++17 ISO C++ language standard
 
 ### Building ###
-If you use Code::Blocks there is a good [tutorial](https://www.youtube.com/watch?v=KHkb1XrtseY) on how to set up wxWidgets.
+If you use Code::Blocks there is a good [tutorial](https://www.youtube.com/watch?v=rVKYRPbKOX8) on how to set up wxWidgets.
