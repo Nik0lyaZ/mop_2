@@ -1,31 +1,64 @@
 #include "Patcher.h"
-#include <algorithm>
-#include <fstream>
-#define THUMB_NOP string{'\x00', '\xBF'}
+#define THUMB_NOP "x00\xBF"
+#ifdef DEBUG
+#include <wx/wx.h>
+#endif // DEBUG
 using namespace std;
-fstream file;
-unsigned obj;
-int ver, lib;
 
-// A simple function for writing bytes!
-void Write(int i, void f(char* a), int n = 4) {
-    file.seekg(i, ios::beg);
-    char buf[n];
-    file.read(buf, n);
-    if (f) f(buf);
-    file.seekp(i, ios::beg);
-    file.write(buf, n);
+#ifdef DEBUG
+void Patcher::Test() {
+    m_file.open("test.txt", ios::in | ios::out | ios::binary);
+    Write(0, "\x0\x0\x0\x0");
+
+    obj = Approx(5000, 1);
+    Write(0, Cmp);
+
+    m_file.close();
+}
+#endif // DEBUG
+
+Patcher::Patcher() {}
+
+Patcher::Patcher(string filename, unsigned obj, int ver, int lib, unsigned approx) {
+    Prepare(filename, obj, ver, lib);
+    m_approx = approx;
 }
 
-void Write(int i, string a) {
-    file.seekp(i, ios::beg);
-    for (auto x : a) {
-        file.put(x);
+void Patcher::Prepare(string filename, unsigned obj, int ver, int lib) {
+    m_filename = filename;
+    m_obj = obj;
+    m_ver = ver;
+    m_lib = lib;
+}
+
+// A simple function for writing bytes!
+void Patcher::Write(int i, void f(char* a), int n) {
+    if(!m_file) return;
+    m_file.seekg(i, ios::beg);
+    char buf[n];
+    m_file.read(buf, n);
+    if (f) f(buf);
+    m_file.seekp(i, ios::beg);
+    m_file.write(buf, n);
+}
+
+void Patcher::Write(int i, string s) {
+    if(!m_file) return;
+    m_file.seekp(i, ios::beg);
+    for (auto x : s) {
+        m_file.put(x);
+    }
+}
+
+void Patcher::InitPows() {
+    if (Pow.size() > 0) return;
+    for (int i = 0; i < 31; i++) {
+        Pow.push_back(1 << i);
     }
 }
 
 // Turns the object count into a DWORD
-void Dword(char* a) {
+void Patcher::Dword(char* a) {
     int sum = 0, n = obj;
     for (int i = 0; i < 8; i++) {
         if (i % 2) {
@@ -38,8 +71,8 @@ void Dword(char* a) {
     }
 }
 
-// Replaces the value in MOV.W instruction bytes
-void Mov(char* a) {
+// Replaces the value in MOVW instruction bytes
+void Patcher::Mov(char* a) {
     obj = min(obj, 65535U);
     unsigned char reg = *(a + 3);
     if ((*a) >> 4 != 4) {
@@ -56,55 +89,43 @@ void Mov(char* a) {
     *a = ((obj >> 8) % 8 << 4) + reg;
 }
 
-vector<unsigned> Pow = {1};
-void GetPows() {
-    if (Pow.size() > 1) return;
-    for (int i = 0; i < 31; i++) {
-        Pow.push_back(Pow[i] << 1);
-    }
-}
-
 // Replaces the value in CMP.W instruction bytes
-void Cmp(char* a) {
-    GetPows();
+void Patcher::Cmp(char* a) {
+    InitPows();
     unsigned char reg = *a;
     reg %= 0x10;
     *a++ = 0xB0 + reg;
     if (obj < 256) {
         *a++ = 0xF1;
         *a++ = obj;
-        *a++ = 0xF;
+        *a++ = 0x0F;
     } else {
         *a++ = obj < 0xFF0000 ? 0xF5 : 0xF1;
         int base = Pow[upper_bound(Pow.begin(), Pow.end(), obj) - Pow.begin() - 1];
         if (obj < INT_MAX) *a++ = obj / (base >> 7) - ((lower_bound(Pow.begin(), Pow.end(), base >> 9) - Pow.begin() + 1) % 2 << 7);
         else *a++ = 0x0;
-        *a++ = 0x7F - ((upper_bound(Pow.begin(), Pow.end(), obj >> 8) - Pow.begin() - 1) >> 1 << 4) - ((obj >> 24) ? 0x80 : 0x0);
+        *a++ = 0x7F - ((upper_bound(Pow.begin(), Pow.end(), obj >> 8) - Pow.begin() - 1) >> 1 << 4) - ((obj >> 24) ? 0x80 : 0x00);
     }
 }
 
-bool CheckApprox(unsigned n) {
+bool Patcher::CheckApprox(unsigned obj) {
     if (obj > INT_MAX) return obj;
-    if (n < 256) return 1;
-    GetPows();
-    int base = Pow[upper_bound(Pow.begin(), Pow.end(), n) - Pow.begin() - 1] >> 7;
-    return !(n % base);
+    if (obj < 256) return 1;
+    InitPows();
+    int base = Pow[upper_bound(Pow.begin(), Pow.end(), obj) - Pow.begin() - 1] >> 7;
+    return !(obj % base);
 }
 
 unsigned Patcher::Approx(unsigned obj, bool type) {
     if (obj > INT_MAX) return obj;
     if (obj < 256) return obj + type;
-    GetPows();
+    InitPows();
     int base = Pow[upper_bound(Pow.begin(), Pow.end(), obj) - Pow.begin() - 1] >> 7;
     return obj - obj % base + (type ? base : 0);
 }
 
-unsigned Approx(bool type) {
-    return Patcher::Approx(obj, type);
-}
-
 int Patcher::GetAutoVer(string filename) {
-    file.open(filename, ios::in | ios::ate | ios::binary);
+    ifstream file(filename, ios::ate | ios::binary);
     if (!file) return -2;
     int filesize = file.tellg();
     // This byte is checked when multiple vers share the file size
@@ -141,12 +162,12 @@ int Patcher::GetAutoVer(string filename) {
     return -1;
 }
 
-Result Patcher::Patch(string filename, int p_ver, unsigned p_obj, int p_lib, unsigned approx, bool visual)
-{
-    file.open(filename, ios::in | ios::out | ios::binary);
-    if (!file) return Result::FileError;
+Result Patcher::Patch() {
+    m_file.open(m_filename, ios::in | ios::out | ios::binary);
+    if (!m_file) return Result::FileError;
 
-    ver = p_ver; obj = visual ? approx : p_obj; lib = p_lib;
+    obj = m_approx ? m_approx : m_obj;
+    ver = m_ver, lib = m_lib;
 
     switch(lib) {
         /*
@@ -154,7 +175,7 @@ Result Patcher::Patch(string filename, int p_ver, unsigned p_obj, int p_lib, uns
             Popup     - EditorUI::showMaxError
             Create    - EditorUI::onCreate
             Duplicate - EditorUI::onDuplicate
-            100kb     - cocos2d::CCString::initWithFormatAndValist
+            100kB     - cocos2d::CCString::initWithFormatAndValist
         */
 
         default: return Result::LibInvalid;
@@ -173,8 +194,8 @@ Result Patcher::Patch(string filename, int p_ver, unsigned p_obj, int p_lib, uns
                 Write(TABLE[0][ver], Mov, ver == 0 ? 4 : 6); // Popup
                 --obj;
                 Write(TABLE[1][ver], Dword); // Create
-                Write(TABLE[2][ver], string{'\x3'}); // 100kB (1)
-                Write(TABLE[3][ver], string{'\x3'}); // 100kB (2)
+                Write(TABLE[2][ver], "\x03"); // 100kB (1)
+                Write(TABLE[3][ver], "\x03"); // 100kB (2)
             }
 
             // 1.3 - 1.41: Popup uses DWORD
@@ -188,8 +209,8 @@ Result Patcher::Patch(string filename, int p_ver, unsigned p_obj, int p_lib, uns
                 Write(TABLE[0][ver - 8], Dword); // Popup
                 --obj;
                 Write(TABLE[1][ver - 8], Dword); // Create
-                Write(TABLE[2][ver - 8], string{'\x3'}); // 100kB (1)
-                Write(TABLE[3][ver - 8], string{'\x3'}); // 100kB (2)
+                Write(TABLE[2][ver - 8], "\x03"); // 100kB (1)
+                Write(TABLE[3][ver - 8], "\x03"); // 100kB (2)
             }
 
             // 1.50 - 1.51: Multiple libraries, fixed level uploading
@@ -255,8 +276,8 @@ Result Patcher::Patch(string filename, int p_ver, unsigned p_obj, int p_lib, uns
                     {0x146598, 0x146754}
                 };
                 Write(TABLE[0][ver - 11], Mov); // Popup
-                Write(TABLE[1][ver - 11], obj <= 0 ? THUMB_NOP : string{'\x02', '\xDD'}); // Zero object toggle (Create)
-                Write(TABLE[2][ver - 11], obj <= 0 ? THUMB_NOP : string{'\xEA', '\xDD'}); // (Duplicate)
+                Write(TABLE[1][ver - 11], obj == 0 ? THUMB_NOP : "\x02\xDD"); // Zero object toggle (Create)
+                Write(TABLE[2][ver - 11], obj == 0 ? THUMB_NOP : "\xEA\xDD"); // Zero object toggle (Duplicate)
                 if (obj) --obj;
                 Write(TABLE[3][ver - 11], Mov); // Create
                 Write(TABLE[4][ver - 11], Mov); // Duplicate
@@ -272,13 +293,13 @@ Result Patcher::Patch(string filename, int p_ver, unsigned p_obj, int p_lib, uns
                     {0x15004A},
                     {0x14E97E}
                 };
-                if (!CheckApprox(obj)) {if (!approx) {file.close(); return Result::ApproxReq;}}
-                else approx = obj;
+                if (!CheckApprox(obj)) {if (!m_approx) {m_file.close(); return Result::ApproxReq;}}
+                else m_approx = obj;
                 Write(TABLE[0][ver - 13], Mov); // Counter
                 Write(TABLE[1][ver - 13], Mov); // Popup
-                Write(TABLE[2][ver - 13], obj <= 0 ? THUMB_NOP : string{'\x02', '\xDB'}); // Zero object toggle (Create)
-                Write(TABLE[3][ver - 13], obj <= 0 ? THUMB_NOP : string{'\xEB', '\xDB'}); // (Duplicate)
-                obj = approx; // Using approximation
+                Write(TABLE[2][ver - 13], obj == 0 ? THUMB_NOP : "\x02\xDB"); // Zero object toggle (Create)
+                Write(TABLE[3][ver - 13], obj == 0 ? THUMB_NOP : "\xEB\xDB"); // Zero object toggle (Duplicate)
+                obj = m_approx; // Using approximation
                 Write(TABLE[4][ver - 13], Cmp); // Create
                 Write(TABLE[5][ver - 13], Cmp); // Duplicate
             }
@@ -298,20 +319,20 @@ Result Patcher::Patch(string filename, int p_ver, unsigned p_obj, int p_lib, uns
                 string THUMB_BLE;
                 switch(ver) {
                     case 14:
-                    case 15: THUMB_BLE = string{'\x02', '\xDD'}; break;
+                    case 15: THUMB_BLE = "\x02\xDD"; break;
                     case 16:
                     case 17:
-                    case 18: THUMB_BLE = string{'\x03', '\xDD'}; break;
+                    case 18: THUMB_BLE = "\x03\xDD"; break;
                 }
-                Write(TABLE[2][ver - 14], (obj <= 0 ? THUMB_NOP : THUMB_BLE)); // Zero object toggle (Create)
+                Write(TABLE[2][ver - 14], (obj == 0 ? THUMB_NOP : THUMB_BLE)); // Zero object toggle (Create)
                 switch(ver) {
-                    case 14: THUMB_BLE = string{'\xE8', '\xDD'}; break;
-                    case 15: THUMB_BLE = string{'\xCA', '\xDD'}; break;
+                    case 14: THUMB_BLE = "\xE8\xDD"; break;
+                    case 15: THUMB_BLE = "\xCA\xDD"; break;
                     case 16:
                     case 17:
-                    case 18: THUMB_BLE = string{'\xE5', '\xDD'}; break;
+                    case 18: THUMB_BLE = "\xE5\xDD"; break;
                 }
-                Write(TABLE[3][ver - 14], (obj <= 0 ? THUMB_NOP : THUMB_BLE)); // (Duplicate)
+                Write(TABLE[3][ver - 14], (obj == 0 ? THUMB_NOP : THUMB_BLE)); // Zero object toggle (Duplicate)
                 if (obj) --obj;
                 Write(TABLE[4][ver - 14], Mov); // Create
                 Write(TABLE[5][ver - 14], Mov); // Duplicate
@@ -375,6 +396,6 @@ Result Patcher::Patch(string filename, int p_ver, unsigned p_obj, int p_lib, uns
         }
     }
 
-    file.close();
+    m_file.close();
     return Result::OK;
 }

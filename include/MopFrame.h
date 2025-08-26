@@ -10,6 +10,9 @@ extern const wxArrayString version, platform;
 class MopFrame : public wxFrame {
 public:
     MopFrame(const wxString& title);
+    #ifdef DEBUG
+    void Test();
+    #endif // DEBUG
 
 private:
 // Preferences
